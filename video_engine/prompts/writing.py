@@ -153,3 +153,105 @@ REQUIREMENTS:
 
 Return ONLY the revised script text, no JSON wrapping or commentary."""
     return system, user
+
+
+def build_short_script_from_topic(
+    channel_name: str,
+    niche: str,
+    voice_id: str,
+    channel_id: int,
+    title: str,
+    brief: str,
+    key_facts: str = "",
+) -> tuple[str, str]:
+    """Write a 20-30 second short script from a topic."""
+
+    system = f"""You are a scriptwriter for "{channel_name}" — an educational channel about {niche}.
+
+Write a 20-30 second narration that answers the topic's question quickly and clearly. The viewer should feel smarter after watching.
+
+RULES:
+- 5-8 narration lines. Under 30 seconds. Every word earns its place.
+- Line 1: Ask the question directly to the viewer.
+- Build from simple to surprising. Start with what they know, reveal what they don't.
+- Use analogies to make complex things click.
+- End with the "aha" moment.
+- Be accurate. Don't oversimplify to the point of being wrong.
+- Conversational — like explaining to a curious friend.
+- No jargon without immediately explaining it.
+- No emojis.
+
+OUTPUT — return a JSON object:
+{{
+  "title": "{title}",
+  "narration": ["Line 1 — the hook", "Line 2", "...", "Final line — the aha"],
+  "caption": "YouTube description + 5-8 hashtags",
+  "tags": ["specific_tag", "broader_tag", "education", "shorts"],
+  "voice_id": "{voice_id}",
+  "channel_id": {channel_id},
+  "format_version": 2
+}}
+
+Return ONLY valid JSON, no markdown."""
+
+    user = f"""Write a 20-30 second short script for:
+
+TITLE: {title}
+BRIEF: {brief}
+KEY FACTS: {key_facts}
+
+Teach ONE thing clearly. End with the moment that makes it click."""
+
+    return system, user
+
+
+def build_midform_script_from_topic(
+    channel_name: str,
+    niche: str,
+    voice_id: str,
+    channel_id: int,
+    title: str,
+    brief: str,
+    key_facts: str = "",
+) -> tuple[str, str]:
+    """Write a 3-5 minute mid-form explainer script from a topic."""
+
+    system = f"""You are a scriptwriter for "{channel_name}" — an educational channel about {niche}.
+
+Write a 3-5 minute narration that fully explains the topic. Build understanding step by step so the viewer truly GETS IT.
+
+RULES:
+- 25-40 narration lines. Each line = one visual on screen.
+- Line 1: Hook — ask the question or state something surprising.
+- Build understanding progressively — each line adds a new piece.
+- Include at least one "wait, really?" moment that reframes what the viewer thought they knew.
+- Use analogies and comparisons to make abstract concepts concrete.
+- Include specific numbers, names, and real details.
+- End with a satisfying conclusion that ties everything together.
+- Conversational tone — like explaining to a smart friend over coffee.
+- No jargon without explaining it. No filler. Every line must add value.
+- No emojis.
+
+OUTPUT — return a JSON object:
+{{
+  "title": "{title}",
+  "narration": ["Line 1 — the hook", "Line 2", "...", "Final line — the conclusion"],
+  "caption": "YouTube description + 5-8 hashtags",
+  "tags": ["specific_tag", "broader_tag", "education"],
+  "voice_id": "{voice_id}",
+  "channel_id": {channel_id},
+  "format_version": 2,
+  "long_form": true
+}}
+
+Return ONLY valid JSON, no markdown."""
+
+    user = f"""Write a 3-5 minute explainer script for:
+
+TITLE: {title}
+BRIEF: {brief}
+KEY FACTS: {key_facts}
+
+Build understanding step by step. Make the viewer truly GET IT by the end."""
+
+    return system, user

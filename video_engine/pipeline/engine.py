@@ -307,12 +307,13 @@ Total: {sum(a.duration for a in audio):.1f}s, {len(audio)} lines"""
                 dur = max(1, min(int(audio[v.index].duration) + 1, 10))
                 await self._log(config, f"video clip line {v.index} — generating image")
 
-                # Step 1: Generate image
+                # Step 1: Generate image (use portrait provider for portrait formats)
                 img_path = os.path.join(images_dir, f"line_{v.index}.png")
                 if not os.path.exists(img_path):
+                    provider = self.image_provider
                     loop = asyncio.get_event_loop()
                     await loop.run_in_executor(
-                        None, lambda: self.image_provider.generate_image(prompt=v.prompt, output_path=img_path)
+                        None, lambda: provider.generate_image(prompt=v.prompt, output_path=img_path)
                     )
 
                 # Compress for video API
@@ -387,20 +388,14 @@ Total: {sum(a.duration for a in audio):.1f}s, {len(audio)} lines"""
                 return None
 
             if asset.type == "video":
-                # Strip audio from video clip, use narration audio instead
-                video_only = asset.path.replace(".mp4", "_vidonly.mp4")
-                if not os.path.exists(video_only):
-                    subprocess.run([
-                        "ffmpeg", "-y", "-i", asset.path,
-                        "-map", "0:v:0", "-c:v", "copy", "-an", video_only,
-                    ], capture_output=True, timeout=30)
-                src = video_only if os.path.exists(video_only) else asset.path
+                # Combine video clip with narration audio
+                # Use -an on input to ignore Grok's audio, then add narration
                 cmd = [
                     "ffmpeg", "-y",
-                    "-stream_loop", "-1", "-i", src,
+                    "-stream_loop", "-1", "-an", "-i", asset.path,
                     "-i", seg_audio.path,
                     "-vf", scale,
-                    "-map", "0:v", "-map", "1:a",
+                    "-map", "0:v:0", "-map", "1:a:0",
                     "-t", str(seg_audio.duration),
                     "-r", "30", "-pix_fmt", "yuv420p",
                     "-c:v", "libx264", "-preset", "fast", "-crf", "14",
@@ -421,6 +416,8 @@ Total: {sum(a.duration for a in audio):.1f}s, {len(audio)} lines"""
 
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
             if result.returncode != 0:
+                logger.warning("segment ffmpeg failed", line=seg_audio.index,
+                               returncode=result.returncode, stderr=result.stderr[-300:] if result.stderr else "")
                 return None
             if os.path.exists(seg_path):
                 return Segment(index=seg_audio.index, path=seg_path, duration=seg_audio.duration)

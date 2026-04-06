@@ -416,8 +416,10 @@ Total: {sum(a.duration for a in audio):.1f}s, {len(audio)} lines"""
 
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
             if result.returncode != 0:
+                err_msg = result.stderr[-500:] if result.stderr else "no stderr"
+                print(f"SEGMENT FAILED line {seg_audio.index}: rc={result.returncode} stderr={err_msg}", flush=True)
                 logger.warning("segment ffmpeg failed", line=seg_audio.index,
-                               returncode=result.returncode, stderr=result.stderr[-300:] if result.stderr else "")
+                               returncode=result.returncode, stderr=err_msg)
                 return None
             if os.path.exists(seg_path):
                 return Segment(index=seg_audio.index, path=seg_path, duration=seg_audio.duration)

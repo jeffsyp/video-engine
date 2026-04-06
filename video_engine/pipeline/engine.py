@@ -530,16 +530,43 @@ Total: {sum(a.duration for a in audio):.1f}s, {len(audio)} lines"""
 # --- Utility functions ---
 
 def _get_duration(path: str) -> float:
-    """Get audio/video duration via ffprobe."""
-    result = subprocess.run(
-        ["ffprobe", "-v", "quiet", "-show_entries", "format=duration",
-         "-of", "default=noprint_wrappers=1:nokey=1", path],
-        capture_output=True, text=True, timeout=10,
-    )
+    """Get audio/video duration. Tries ffprobe first, falls back to imageio-ffmpeg or mutagen."""
+    # Try system ffprobe
     try:
-        return float(result.stdout.strip())
-    except ValueError:
-        return 0.0
+        result = subprocess.run(
+            ["ffprobe", "-v", "quiet", "-show_entries", "format=duration",
+             "-of", "default=noprint_wrappers=1:nokey=1", path],
+            capture_output=True, text=True, timeout=10,
+        )
+        dur = float(result.stdout.strip())
+        if dur > 0:
+            return dur
+    except (FileNotFoundError, ValueError):
+        pass
+
+    # Try imageio-ffmpeg's bundled ffprobe
+    try:
+        import imageio_ffmpeg
+        ffprobe_path = imageio_ffmpeg.get_ffmpeg_exe().replace("ffmpeg", "ffprobe")
+        result = subprocess.run(
+            [ffprobe_path, "-v", "quiet", "-show_entries", "format=duration",
+             "-of", "default=noprint_wrappers=1:nokey=1", path],
+            capture_output=True, text=True, timeout=10,
+        )
+        dur = float(result.stdout.strip())
+        if dur > 0:
+            return dur
+    except Exception:
+        pass
+
+    # Last resort: use mutagen for audio files
+    try:
+        from mutagen.mp3 import MP3
+        return MP3(path).info.length
+    except Exception:
+        pass
+
+    return 0.0
 
 
 def _write_karaoke_ass(path: str, words: list, width: int = 720, height: int = 1280,

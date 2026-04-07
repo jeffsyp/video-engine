@@ -458,7 +458,7 @@ Total: {sum(a.duration for a in audio):.1f}s, {len(audio)} lines"""
         visuals: list[Visual], config: VideoConfig,
     ) -> Optional[str]:
         """Transcribe audio with Whisper and burn karaoke subtitles."""
-        if config.subtitle_style == "none":
+        if config.subtitle_style == "none" or os.getenv("DISABLE_SUBTITLES") == "true":
             import shutil
             shutil.copy2(concat_path, final_path)
             return None

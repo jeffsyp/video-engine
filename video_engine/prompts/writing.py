@@ -181,6 +181,16 @@ RULES:
 - No jargon without immediately explaining it.
 - No emojis.
 
+WRITING FOR SPOKEN DELIVERY (this will be read by AI voice):
+- Use contractions: "it's" not "it is", "don't" not "do not"
+- Add commas where a human would naturally pause to breathe
+- Use "..." for dramatic pauses
+- Use em dashes — like this — for mid-sentence breaks
+- Write out numbers: "twenty-three" not "23", "five million" not "5,000,000"
+- Spell out abbreviations the first time: "NASA" is fine, but "MEMS" should be "MEMS — tiny mechanical sensors"
+- Keep sentences short and punchy. Long complex sentences sound robotic when read aloud.
+- Read each line aloud in your head — if it sounds awkward, rewrite it.
+
 OUTPUT — return a JSON object:
 {{
   "title": "{title}",
@@ -231,6 +241,15 @@ RULES:
 - Conversational tone — like explaining to a smart friend over coffee.
 - No jargon without explaining it. No filler. Every line must add value.
 - No emojis.
+
+WRITING FOR SPOKEN DELIVERY (this will be read by AI voice):
+- Use contractions: "it's" not "it is", "don't" not "do not"
+- Add commas where a human would naturally pause to breathe
+- Use "..." for dramatic pauses
+- Use em dashes — like this — for mid-sentence breaks
+- Write out numbers: "twenty-three" not "23", "five million" not "5,000,000"
+- Spell out abbreviations the first time
+- Keep sentences short and punchy. Long complex sentences sound robotic when read aloud.
 
 OUTPUT — return a JSON object:
 {{
